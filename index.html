@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Global Emotional Intelligence Test - Corporate DM Division</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+      }
+      header, footer, button, .print-hidden {
+        display: none !important;
+      }
+      .shadow-sm, .shadow-xl, .shadow-md, .shadow-lg {
+        box-shadow: none !important;
+      }
+      .border {
+        border-color: #cbd5e1 !important;
+      }
+      .print-card {
+        border: 2px solid #cbd5e1 !important;
+        background-color: #fff !important;
+      }
+    }
+  </style>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50/50 min-h-screen text-slate-800 antialiased flex flex-col select-none">
+  
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // --- DATA PILAR (4 PILAR BEHAVIORAL UTAMA) ---
+    const QUADRANTS = [
+      {
+        id: 1,
+        name: 'Self-Awareness',
+        englishName: 'Pillar 1',
+        description: 'Kesadaran diri terhadap dampak emosi pada perilaku koordinasi.',
+        color: 'text-indigo-600',
+        borderColor: 'border-indigo-100',
+        progressColor: 'bg-indigo-600',
+        bgColor: 'bg-indigo-50/30'
+      },
+      {
+        id: 2,
+        name: 'Self-Regulation',
+        englishName: 'Pillar 2',
+        description: 'Kemampuan mengendalikan emosi & fokus di bawah tekanan target okupansi.',
+        color: 'text-sky-600',
+        borderColor: 'border-sky-100',
+        progressColor: 'bg-sky-600',
+        bgColor: 'bg-sky-50/30'
+      },
+      {
+        id: 3,
+        name: 'Social Awareness',
+        englishName: 'Pillar 3',
+        description: 'Memahami dinamika pasar, empati pada tamu, dan koordinasi antar unit.',
+        color: 'text-emerald-700',
+        borderColor: 'border-emerald-100',
+        progressColor: 'bg-emerald-600',
+        bgColor: 'bg-emerald-50/30'
+      },
+      {
+        id: 4,
+        name: 'Relationship Management',
+        englishName: 'Pillar 4',
+        description: 'Diplomasi menyelesaikan konflik internal & menginspirasi tim marcom lokal.',
+        color: 'text-rose-700',
+        borderColor: 'border-rose-100',
+        progressColor: 'bg-rose-600',
+        bgColor: 'bg-rose-50/30'
+      }
+    ];
+
+    // --- DATA JAWABAN & PERTANYAAN (40 SOAL BINER STANDAR EQ TEST) ---
+    const QUESTIONS = [
+      // Pillar 1 - Self-Awareness
+      { id: 1, quadrant: 1, text: 'Emosi saya umumnya', options: [{ text: 'Memiliki dampak yang besar pada cara saya berperilaku.', score: 1 }, { text: 'Hampir tidak berdampak pada cara saya berperilaku.', score: 0 }] },
+      { id: 2, quadrant: 1, text: 'Saya umumnya dipandu oleh', options: [{ text: 'Tujuan dan nilai-nilai saya.', score: 1 }, { text: 'Tujuan dan nilai-nilai lainnya.', score: 0 }] },
+      { id: 3, quadrant: 1, text: 'Saat saya berada di bawah tekanan, saya biasanya memiliki', options: [{ text: 'Mengubah perilaku dari biasanya.', score: 1 }, { text: 'Perilaku yang tetap tidak berubah.', score: 0 }] },
+      { id: 4, quadrant: 1, text: 'Saya umumnya belajar paling banyak', options: [{ text: 'Dari refleksi atas pengalaman masa lalu.', score: 1 }, { text: 'Dengan melakukan aktivitas secara aktif.', score: 0 }] },
+      { id: 5, quadrant: 1, text: 'Saya umumnya', options: [{ text: 'Saya memiliki selera humor yang baik tentang diri saya sendiri.', score: 1 }, { text: 'Menganggap diri saya serius.', score: 0 }] },
+      { id: 6, quadrant: 1, text: 'Saya memperkenalkan diri.', options: [{ text: 'Dengan rasa percaya diri dan memiliki "kharisma".', score: 0 }, { text: 'Dengan sedikit rasa percaya diri dan kehati-hatian.', score: 1 }] },
+      { id: 7, quadrant: 1, text: 'Di mana pun ada ketidakpastian dan tekanan, saya selalu', options: [{ text: 'Tegas dan mengambil keputusan yang tepat.', score: 0 }, { text: 'Berhati-hati dalam mengambil keputusan yang tepat.', score: 1 }] },
+      { id: 8, quadrant: 1, text: 'Saya selalu menyuarakan pandangan bahwa', options: [{ text: 'Tidak populer dan berani mengambil risiko demi kebenaran.', score: 1 }, { text: 'Sebagian besar orang lain setuju dan mendukungnya.', score: 0 }] },
+      { id: 9, quadrant: 1, text: 'Saya selalu suka', options: [{ text: 'Menghadapi tantangan baru.', score: 1 }, { text: 'Mempertahankan status quo.', score: 0 }] },
+      { id: 10, quadrant: 1, text: 'Saya umumnya', options: [{ text: 'Menumbuhkan kepercayaan pada orang lain.', score: 1 }, { text: 'Mengandalkan kepercayaan orang lain.', score: 0 }] },
+
+      // Pillar 2 - Self-Regulation
+      { id: 11, quadrant: 2, text: 'Saya umumnya', options: [{ text: 'Mengendalikan emosi dan dorongan impulsif saya yang mengganggu.', score: 1 }, { text: 'Membiarkan emosi dan suasana hati saya mempengaruhi perilaku saya.', score: 0 }] },
+      { id: 12, quadrant: 2, text: 'Saat saya berada di bawah tekanan', options: [{ text: 'Saya berpikir jernih dan tetap fokus.', score: 1 }, { text: 'Saya mudah teralihkan perhatiannya oleh hal-hal lain.', score: 0 }] },
+      { id: 13, quadrant: 2, text: 'Saya selalu', options: [{ text: 'Lakukan seperti yang kukatakan akan kulakukan.', score: 1 }, { text: 'Hanya melakukan apa yang harus saya lakukan.', score: 0 }] },
+      { id: 14, quadrant: 2, text: 'Kepercayaan dari orang lain', options: [{ text: 'Dibangun berdasarkan keandalan dan keaslian.', score: 1 }, { text: 'Diberikan kepada saya secara otomatis.', score: 0 }] },
+      { id: 15, quadrant: 2, text: 'Saya selalu', options: [{ text: 'Fleksibel dalam cara saya melihat peristiwa.', score: 1 }, { text: 'Mampu melihat peristiwa apa adanya.', score: 0 }] },
+      { id: 16, quadrant: 2, text: 'Saat situasi berubah, saya selalu', options: [{ text: 'Menangani berbagai tuntutan dan prioritas yang berubah-ubah dengan lancar.', score: 1 }, { text: 'Bekerja keras untuk mencoba memenuhi tuntutan tersebut.', score: 0 }] },
+      { id: 17, quadrant: 2, text: 'Saya selalu', options: [{ text: 'Menetapkan tujuan yang menantang bagi diri saya sendiri.', score: 1 }, { text: 'Menyelesaikan tujuan yang telah ditetapkan untuk saya.', score: 0 }] },
+      { id: 18, quadrant: 2, text: 'Ketika hambatan dan kemunduran terjadi dalam mengejar tujuan saya, saya selalu', options: [{ text: 'Tetaplah berupaya mencapai tujuan meskipun apa pun yang telah terjadi.', score: 1 }, { text: 'Menyesuaikan kembali tujuan dan/atau harapan.', score: 0 }] },
+      { id: 19, quadrant: 2, text: 'Secara umum, saya', options: [{ text: 'Mengejar tujuan di luar apa yang diduga atau diharapkan dari saya.', score: 1 }, { text: 'Mengejar tujuan hanya sejauh yang dituntut dari saya.', score: 0 }] },
+      { id: 20, quadrant: 2, text: 'Ketika saya mengidentifikasi peluang, saya selalu', options: [{ text: 'Proaktif dalam mengejar peluang tersebut.', score: 1 }, { text: 'Ragu apakah akan mengejar kesempatan tersebut.', score: 0 }] },
+
+      // Pillar 3 - Social-Awareness
+      { id: 21, quadrant: 3, text: 'Perbedaan antar kelompok selalu ada', options: [{ text: 'Dipahami dan dihargai.', score: 1 }, { text: 'Menyebabkan kesulitan dan keresahan.', score: 0 }] },
+      { id: 22, quadrant: 3, text: 'Ketika saya melihat prasangka dan intoleransi, saya selalu', options: [{ text: 'Menantang orang-orang yang memulai.', score: 1 }, { text: 'Menutup mata dan mengabaikannya.', score: 0 }] },
+      { id: 23, quadrant: 3, text: 'Saya selalu membantu berdasarkan', options: [{ text: 'Memahami kebutuhan dan perasaan orang lain.', score: 1 }, { text: 'Tugas-tugas yang membutuhkan bantuan orang lain.', score: 0 }] },
+      { id: 24, quadrant: 3, text: 'Saya selalu', options: [{ text: 'Mendengarkan dengan baik dan memperhatikan isyarat emosional.', score: 1 }, { text: 'Dengarkan kata-kata penting yang disampaikan.', score: 0 }] },
+      { id: 25, quadrant: 3, text: 'Perspektif lain selalu ada.', options: [{ text: 'Dipahami dan kepekaan ditunjukkan.', score: 1 }, { text: 'Mengaburkan masalah dan membuat kita keluar jalur.', score: 0 }] },
+      { id: 26, quadrant: 3, text: 'Saya selalu menemukan jejaring sosial di dalam organisasi.', options: [{ text: 'Membantu menciptakan jaringan pengambilan keputusan yang lebih baik.', score: 1 }, { text: 'Menghambat penyampaian kinerja.', score: 0 }] },
+      { id: 27, quadrant: 3, text: 'Saya selalu menggunakan', options: [{ text: 'Hubungan kekuasaan kunci informal untuk mendapatkan apa yang saya butuhkan.', score: 1 }, { text: 'Jaringan pengambilan keputusan formal untuk mendapatkan apa yang saya butuhkan.', score: 0 }] },
+      { id: 28, quadrant: 3, text: 'Saya selalu', options: [{ text: 'Memahami kebutuhan pelanggan dan mencocokkan produk/layanan.', score: 1 }, { text: 'Berikan kepada pelanggan apa yang mereka minta.', score: 0 }] },
+      { id: 29, quadrant: 3, text: 'Saya selalu', options: [{ text: 'Bertanggung jawab atau bertindak sebagai penasihat terpercaya bagi pelanggan.', score: 1 }, { text: 'Katakan pada pelanggan apa yang ingin mereka dengar.', score: 0 }] },
+      { id: 30, quadrant: 3, text: 'Meningkatkan kepuasan dan loyalitas pelanggan', options: [{ text: 'Itu selalu menjadi bagian dari cara saya bekerja.', score: 1 }, { text: 'Tidak penting dalam mencapai penjualan.', score: 0 }] },
+
+      // Pillar 4 - Relationship-Management
+      { id: 31, quadrant: 4, text: 'Visi dan misi selalu', options: [{ text: 'Digunakan untuk menginspirasi kelompok dan individu.', score: 1 }, { text: 'Diberikan kepada staf agar mereka tahu ke mana kita akan pergi.', score: 0 }] },
+      { id: 32, quadrant: 4, text: 'Saya selalu', options: [{ text: 'Menjadi teladan dalam perilaku yang diharapkan dari orang lain.', score: 1 }, { text: 'Beri tahu orang-orang tentang perilaku yang diharapkan.', score: 0 }] },
+      { id: 33, quadrant: 4, text: 'Saya selalu memberikan tasks kepada orang-orang yang', options: [{ text: 'Akan tumbuh dan berkembang sebagai hasil dari tantangan tersebut.', score: 1 }, { text: 'Mampu menyelesaikan pekerjaan dan melakukannya dengan baik.', score: 0 }] },
+      { id: 34, quadrant: 4, text: 'Memenangkan hati orang lain adalah sesuatu', options: [{ text: 'Saya sangat mahir dalam hal itu.', score: 1 }, { text: 'Itu yang menurutku sulit dilakukan.', score: 0 }] },
+      { id: 35, quadrant: 4, text: 'Saya selalu berkomunikasi dengan cara', options: [{ text: 'Yang berupaya mencapai saling pengertian dan berbagi informasi secara menyeluruh.', score: 1 }, { text: 'Agar semua orang mengerti apa yang saya katakan.', score: 0 }] },
+      { id: 36, quadrant: 4, text: 'Saya selalu', options: [{ text: 'Menyadari perlunya perubahan dan menghilangkan hambatan.', score: 1 }, { text: 'Ikuti perubahan yang didorong oleh orang lain.', score: 0 }] },
+      { id: 37, quadrant: 4, text: 'Saya selalu menangani orang-orang yang sulit', options: [{ text: 'Dengan diplomasi dan taktik.', score: 1 }, { text: 'Dengan cara yang lugas dan langsung.', score: 0 }] },
+      { id: 38, quadrant: 4, text: 'Saya selalu mencari hubungan yang', options: [{ text: 'Saling menguntungkan.', score: 1 }, { text: 'Akan membantu saya mencapai tujuan akhir saya.', score: 0 }] },
+      { id: 39, quadrant: 4, text: 'Saya umumnya memiliki', options: [{ text: 'Fokus yang seimbang antara tugas dan hubungan.', score: 1 }, { text: 'Fokus yang lebih kuat pada tugas daripada hubungan.', score: 0 }] },
+      { id: 40, quadrant: 4, text: 'Saat saya bekerja dengan tim, saya selalu', options: [{ text: 'Libatkan semua anggota untuk berpartisipasi dengan antusias.', score: 1 }, { text: 'Jelaskan dengan gamblang apa yang saya harapkan dari para anggota.', score: 0 }] }
+    ];
+
+    // --- LANDING PAGE COMPONENT (NO FORM AT ALL) ---
+    function LandingPage({ onStart }) {
+      return (
+        <div className="max-w-4xl mx-auto my-6 p-1 md:p-6">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="relative bg-slate-50 border-b border-slate-200 px-6 py-12 text-center">
+              <div className="relative z-10 max-w-2xl mx-auto">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-100 mb-4">
+                  Sesi Pelatihan Internal: Corporate Digital Marketing
+                </span>
+                <h1 className="text-3xl md:text-5xl font-light text-slate-900 tracking-tight mb-4">
+                  The Global <span className="font-semibold">Emotional Intelligence</span> Test
+                </h1>
+                <p className="text-slate-500 text-sm max-w-xl mx-auto leading-relaxed">
+                  Evaluasi mandiri berbasis pilar kecerdasan emosional untuk mengoptimalkan performa koordinasi antar unit hotel.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-6 md:p-10 flex flex-col items-center justify-center space-y-8">
+              <div className="w-full max-w-xl space-y-4 text-sm text-slate-600 text-center leading-relaxed">
+                <p className="font-bold text-slate-400 uppercase tracking-wider text-xs">Petunjuk Pengisian:</p>
+                <p>Pilihlah salah satu dari pernyataan di bawah ini berdasarkan kondisi riil Anda saat ini, bukan kondisi ideal yang Anda harapkan.</p>
+                
+                <div className="grid grid-cols-2 gap-3 text-left p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs max-w-md mx-auto">
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-indigo-600" /><span>Pillar 1: Self-Awareness</span></div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-sky-600" /><span>Pillar 2: Self-Regulation</span></div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-600" /><span>Pillar 3: Social Awareness</span></div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-rose-600" /><span>Pillar 4: Relationship Management</span></div>
+                </div>
+              </div>
+
+              <div className="w-full max-w-xs pt-2">
+                <button 
+                  onClick={onStart} 
+                  className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl cursor-pointer transition-all shadow-md shadow-slate-900/10 hover:shadow-lg text-center tracking-wide"
+                >
+                  Mulai Pengisian Tes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- QUESTION CARD COMPONENT ---
+    function QuestionCard({ questions, currentQuadrant, answers, onAnswerChange, onNext, onPrevious, isFirstStep, isLastStep, totalPercent }) {
+      const unansweredCount = questions.filter(q => answers[q.id] === undefined).length;
+      const isQuadrantComplete = unansweredCount === 0;
+
+      const colors = {
+        1: { text: 'text-indigo-600', bg: 'bg-indigo-600', light: 'bg-indigo-50/10' },
+        2: { text: 'text-sky-600', bg: 'bg-sky-600', light: 'bg-sky-50/10' },
+        3: { text: 'text-emerald-700', bg: 'bg-emerald-600', light: 'bg-emerald-50/10' },
+        4: { text: 'text-rose-700', bg: 'bg-rose-600', light: 'bg-rose-50/10' }
+      }[currentQuadrant.id];
+
+      return (
+        <div className="max-w-4xl mx-auto my-4 p-1 md:p-6">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Langkah {currentQuadrant.id} dari 4</span>
+              <span className="text-xs font-semibold text-slate-500 font-mono">Progress: {Math.round(totalPercent)}%</span>
+            </div>
+
+            <div className={`p-6 ${colors.light} border-b border-slate-200`}>
+              <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-white border border-slate-200 mb-1.5 ${colors.text}`}>
+                {currentQuadrant.englishName}
+              </span>
+              <h2 className="text-xl font-semibold text-slate-900">{currentQuadrant.name}</h2>
+              <p className="text-xs text-slate-500 mt-1">{currentQuadrant.description}</p>
+            </div>
+
+            <div className="divide-y divide-slate-100">
+              {questions.map((q) => (
+                <div key={q.id} className="p-6 space-y-3">
+                  <div className="flex gap-3">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-xs font-mono text-slate-500 shrink-0">{q.id}</span>
+                    <p className="text-sm font-medium text-slate-800 pt-0.5">{q.text}</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-9">
+                    {q.options.map((opt, oIdx) => {
+                      const isSelected = answers[q.id]?.index === oIdx;
+                      return (
+                        <button
+                          key={oIdx}
+                          type="button"
+                          onClick={() => onAnswerChange(q.id, { index: oIdx, score: opt.score })}
+                          className={`p-3 text-left text-xs rounded-xl border transition-all cursor-pointer ${
+                            isSelected ? `${colors.bg} text-white border-transparent font-medium shadow-sm` : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                          }`}
+                        >
+                          {opt.text}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center justify-between">
+              <button type="button" onClick={onPrevious} disabled={isFirstStep} className={`px-4 py-2 border rounded-full text-xs text-slate-500 bg-white hover:bg-slate-50 cursor-pointer ${isFirstStep ? 'opacity-30 pointer-events-none' : ''}`}>
+                Kembali
+              </button>
+              <button type="button" onClick={onNext} disabled={!isQuadrantComplete} className={`px-5 py-2 rounded-full text-xs font-semibold cursor-pointer ${isQuadrantComplete ? 'bg-slate-900 text-white hover:bg-slate-800' : 'bg-slate-200 text-slate-400 pointer-events-none'}`}>
+                {isLastStep ? 'Selesai & Lihat Hasil' : 'Langkah Berikutnya'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- SCORE DASHBOARD COMPONENT (WITH FULL INDONESIAN PERSONALISED FEEDBACK LOGIC) ---
+    function ScoreDashboard({ answers, onReset }) {
+      const [name, setName] = useState('');
+      const [hotelUnit, setHotelUnit] = useState('');
+
+      let totalEQScore = 0;
+
+      const pilarResults = QUADRANTS.map((quad) => {
+        const minQ = (quad.id - 1) * 10 + 1;
+        const maxQ = quad.id * 10;
+        let score = 0;
+        for (let i = minQ; i <= maxQ; i++) {
+          score += answers[i]?.score || 0;
+        }
+
+        totalEQScore += score;
+
+        let statusText = '';
+        let badgeColor = '';
+        if (score >= 8.0) {
+          statusText = 'Excellent';
+          badgeColor = 'bg-emerald-100 text-emerald-800 border-emerald-200';
+        } else if (score >= 6.0) {
+          statusText = 'Good';
+          badgeColor = 'bg-blue-100 text-blue-800 border-blue-200';
+        } else if (score >= 4.0) {
+          statusText = 'Average';
+          badgeColor = 'bg-amber-100 text-amber-800 border-amber-200';
+        } else {
+          statusText = 'Needs Development';
+          badgeColor = 'bg-rose-100 text-rose-800 border-rose-200';
+        }
+
+        return { ...quad, score, statusText, badgeColor };
+      });
+
+      const totalPercentage = Math.round((totalEQScore / 40) * 100);
+
+      // FIX LOGIC & BAHASA INDONESIA (Sesuai gambar referensi 1)
+      let generalLabel = '';
+      let generalFeedbackText = '';
+      if (totalEQScore >= 32.0) {
+        generalLabel = 'Kecerdasan Emosional Luar Biasa & Kepemimpinan Strategis';
+        generalFeedbackText = 'Luar biasa! Skor Anda menunjukkan kapabilitas kecerdasan emosional yang sangat tinggi di sebagian besar pilar. Anda memiliki fondasi yang kuat untuk memimpin kolaborasi lintas unit hotel, menginspirasi tim Marcom, serta mengelola campaign digital 360° dengan kepala dingin di bawah tekanan target okupansi.';
+      } else if (totalEQScore >= 24.0) {
+        generalLabel = 'Kecerdasan Emosional Baik dengan Ruang Pengembangan Minor';
+        generalFeedbackText = 'Kerja yang bagus! Secara umum kecerdasan emosional Anda sudah berkembang dengan baik dan solid. Anda mampu beradaptasi dengan dinamika tim internal hotel. Untuk mengoptimalkan performa, fokuslah memberikan perhatian ekstra pada pilar skor yang masih rendah agar kompetensi EI Anda seimbang di semua kuadran.';
+      } else if (totalEQScore >= 16.0) {
+        generalLabel = 'Kapabilitas Rata-rata dengan Kebutuhan Pengembangan Menengah';
+        generalFeedbackText = 'Hasil Anda berada di batas rata-rata. Kompetensi kecerdasan emosional Anda sudah cukup untuk operasional harian, namun membutuhkan fokus yang lebih sadar pada komunikasi aktif, manajemen konflik, serta penanganan stres taktis saat menghadapi komplain tamu atau dinamika kerja yang cepat.';
+      } else {
+        generalLabel = 'Memerlukan Perbaikan Taktis & Penataan Perilaku';
+        generalFeedbackText = 'Perhatian diperlukan. Skor Anda menunjukkan bahwa area kecerdasan emosional ini menjadi prioritas utama untuk dikembangkan. Sangat disarankan untuk melakukan evaluasi mandiri yang mendalam, mengikuti professional coaching, serta melatih regulasi diri demi meningkatkan efektivitas kerja di unit hotel.';
+      }
+
+      return (
+        <div className="max-w-4xl mx-auto my-4 p-1 md:p-6">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-md p-6 md:p-8 space-y-6">
+            
+            {/* PANEL INPUT IDENTITAS DI AKHIR (Sembunyikan saat cetak) */}
+            <div className="print-hidden bg-slate-50 border border-slate-200 p-5 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Nama / Inisial Markom</label>
+                <input 
+                  type="text" 
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)} 
+                  placeholder="Ketik nama Anda di sini..." 
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-slate-400 font-medium transition-all"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Unit Hotel / Cluster Properti</label>
+                <input 
+                  type="text" 
+                  value={hotelUnit} 
+                  onChange={(e) => setHotelUnit(e.target.value)} 
+                  placeholder="Contoh: Marcom - JHL Solitaire..." 
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-slate-400 font-medium transition-all"
+                />
+              </div>
+            </div>
+
+            {/* HEADER REPORT */}
+            <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
+              <div>
+                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-md uppercase tracking-wider">
+                  Official Competency Report
+                </span>
+                <h1 className="text-xl font-extrabold text-slate-900 tracking-tight mt-1">Emotional Intelligence Matrix</h1>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Personnel: <span className="text-slate-800 font-bold">{name || 'Assessment Tanpa Nama'}</span> &bull; Unit: <span className="text-slate-800 font-bold">{hotelUnit || 'General Cluster / Property'}</span>
+                </p>
+              </div>
+              
+              <div className="print-hidden flex items-center gap-2">
+                <button 
+                  onClick={() => window.print()} 
+                  className="px-4 py-2.5 bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 cursor-pointer transition-all"
+                >
+                  Export Report (PDF)
+                </button>
+                <button 
+                  onClick={onReset} 
+                  className="px-4 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 cursor-pointer transition-all"
+                >
+                  Reset Tes
+                </button>
+              </div>
+            </div>
+
+            {/* BOX RECTANGLE BANNER GENERAL RESULT SCORE */}
+            <div className="bg-[#FFFF00] border-2 border-slate-900 p-6 rounded-sm text-center space-y-2 shadow-sm print-card">
+              <h2 className="text-xs font-extrabold text-slate-900 tracking-widest uppercase">Overall EI Score</h2>
+              <div className="text-5xl font-black font-mono text-slate-900 tracking-tighter">
+                {totalEQScore.toFixed(1)}
+                <span className="text-xl font-bold opacity-60 font-sans ml-1">/40.0</span>
+              </div>
+              <p className="text-xs font-bold text-slate-900 md:text-sm tracking-tight pt-1">
+                {totalPercentage}% &mdash; {generalLabel}
+              </p>
+            </div>
+
+            {/* BOX 2: PERSONALISED FEEDBACK PANEL (Sesuai Request Gambar Pertama, Menggunakan Bahasa Indonesia) */}
+            <div className="border border-amber-200 bg-amber-50/50 p-5 rounded-md space-y-1.5 print-card">
+              <h3 className="text-[10px] font-bold tracking-widest uppercase text-amber-900/80 block">Personalised Feedback</h3>
+              <p className="text-xs text-slate-800 leading-relaxed font-semibold">
+                {generalFeedbackText}
+              </p>
+            </div>
+
+            {/* GRID DETAIL 4 PILAR UTAMA */}
+            <div className="space-y-3">
+              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Breakdown Skor per Pilar Kompetensi</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {pilarResults.map((p) => (
+                  <div key={p.id} className="p-4 rounded-xl border border-slate-200 bg-white space-y-3 print-card">
+                    <div className="flex justify-between items-start gap-2">
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">{p.englishName}</span>
+                        <h5 className="text-xs font-bold text-slate-900">{p.name}</h5>
+                      </div>
+                      <span className={`px-2 py-0.5 text-[9px] font-bold rounded border ${p.badgeColor}`}>
+                        {p.statusText}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[10px] font-mono">
+                        <span className="text-slate-400">Score Matrix</span>
+                        <span className="font-bold text-slate-800">{p.score.toFixed(1)}/10.0</span>
+                      </div>
+                      <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden border border-slate-200/40">
+                        <div className={`${p.progressColor} h-full rounded-full`} style={{ width: `${(p.score / 10) * 100}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+    // --- MAIN ENGINE APP CONTROL ---
+    function App() {
+      const [appState, setAppState] = useState('LANDING');
+      const [answers, setAnswers] = useState({});
+      const [currentQuadrantIndex, setCurrentQuadrantIndex] = useState(0);
+
+      const handleStart = () => {
+        setAnswers({});
+        setCurrentQuadrantIndex(0);
+        setAppState('QUESTIONS');
+      };
+
+      const handleAnswerChange = (qId, answerObj) => {
+        setAnswers(prev => ({ ...prev, [qId]: answerObj }));
+      };
+
+      const handleNext = () => {
+        if (currentQuadrantIndex < QUADRANTS.length - 1) {
+          setCurrentQuadrantIndex(prev => prev + 1);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          setAppState('RESULTS');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      };
+
+      const handlePrevious = () => {
+        if (currentQuadrantIndex > 0) {
+          setCurrentQuadrantIndex(prev => prev - 1);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      };
+
+      const currentQuadrant = QUADRANTS[currentQuadrantIndex];
+      const currentQuestions = QUESTIONS.filter(q => q.quadrant === currentQuadrant.id);
+      const totalPercent = (Object.keys(answers).length / QUESTIONS.length) * 100;
+
+      return (
+        <div className="flex flex-col min-h-screen">
+          <header className="bg-white border-b border-slate-200 px-6 py-4 print-hidden flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-slate-900" />
+              <span className="text-xs font-bold tracking-wider uppercase text-slate-900">EQ Matrix Analytics</span>
+            </div>
+            <span className="text-[10px] font-bold uppercase px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md border border-slate-200">
+              Internal Corporate Dashboard
+            </span>
+          </header>
+
+          <main className="flex-1 w-full p-2 md:p-4">
+            {appState === 'LANDING' && <LandingPage onStart={handleStart} />}
+            {appState === 'QUESTIONS' && (
+              <QuestionCard
+                questions={currentQuestions}
+                currentQuadrant={currentQuadrant}
+                answers={answers}
+                onAnswerChange={handleAnswerChange}
+                onNext={handleNext}
+                onPrevious={handlePrevious}
+                isFirstStep={currentQuadrantIndex === 0}
+                isLastStep={currentQuadrantIndex === QUADRANTS.length - 1}
+                totalPercent={totalPercent}
+              />
+            )}
+            {appState === 'RESULTS' && (
+              <ScoreDashboard 
+                answers={answers} 
+                onReset={() => {
+                  setAppState('LANDING');
+                  setAnswers({});
+                  setCurrentQuadrantIndex(0);
+                }} 
+              />
+            )}
+          </main>
+
+          <footer className="py-5 bg-white border-t border-slate-200 text-center text-[9px] text-slate-400 uppercase tracking-widest print-hidden">
+            Corporate Digital Marketing Section &copy; 2026
+          </footer>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
